@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Convite | Public Sector Summit</title>
+   
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+   
+    <!-- Configuração do Tailwind Customizada -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#050505',
+                            blue: '#00BEFF',
+                            green: '#C0FF7D',
+                            pink: '#FF89FF',
+                            slate: '#1E293B',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                        display: ['Poppins', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'gradient-brand': 'linear-gradient(90deg, #00BEFF 0%, #FF89FF 100%)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+   
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <!-- html2canvas para gerar o PNG -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        body {
+            background-color: #050505;
+            color: #e2e8f0;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, .font-display { font-family: 'Poppins', sans-serif; }
+       
+        .text-gradient {
+            background: linear-gradient(90deg, #00BEFF 0%, #FF89FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-panel {
+            background: rgba(8, 12, 20, 0.95);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+
+        .custom-input {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .custom-input:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #00BEFF;
+            outline: none;
+            box-shadow: 0 0 20px rgba(0, 190, 255, 0.15);
+        }
+
+        /* Classes Específicas para o Canvas do Convite */
+        #capture-area {
+            width: 1280px;
+            height: 720px;
+            background-color: #050505;
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 190, 255, 0.15) 0%, transparent 60%),
+                              url('https://i.imgur.com/MJTAOCj.png');
+            background-size: cover;
+            background-position: center top;
+            transform-origin: top left;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .invite-glass {
+            background: rgba(8, 12, 20, 0.85);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .invite-icon-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .invite-date-badge {
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Wrapper para escalar o canvas visualmente sem perder a resolução original */
+        #preview-wrapper {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+    <!-- Header Simples -->
+    <nav class="w-full py-6 border-b border-white/10 bg-brand-dark/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-white tracking-wide"><span class="text-brand-blue">Xertica</span><span class="text-brand-pink">.ai</span> Convites</h1>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex items-start pt-10 pb-20">
+        <div class="max-w-7xl mx-auto px-6 w-full">
+           
+            <div class="flex flex-col lg:flex-row gap-10">
+               
+                <!-- COLUNA ESQUERDA: CONTROLES -->
+                <div class="w-full lg:w-1/3 space-y-6">
+                    <div class="glass-panel rounded-3xl p-8 relative z-10 border-t border-brand-blue/20">
+                        <div class="mb-6">
+                            <h3 class="text-xl font-bold text-white mb-1">Personalizar Convite</h3>
+                            <p class="text-xs text-slate-400 font-light">Preencha os dados para atualizar a prévia ao lado.</p>
+                        </div>
+
+                        <div class="space-y-5">
+                            <!-- Nome do Convidado -->
+                            <div class="space-y-1.5">
+                                <label class="block text-[10px] uppercase font-bold text-slate-500 tracking-wider ml-1">Nome do Convidado</label>
+                                <input type="text" id="inputName" placeholder="Ex: Dr. João Silva" class="custom-input w-full px-4 py-3 rounded-xl text-sm">
+                            </div>
+
+                            <!-- Botão Baixar -->
+                            <button onclick="downloadInvite()" class="w-full mt-8 py-4 rounded-xl bg-gradient-brand text-white font-bold uppercase tracking-widest text-sm hover:brightness-110 transform hover:-translate-y-1 active:scale-95 transition-all duration-300 shadow-lg shadow-brand-blue/20 flex justify-center items-center gap-2">
+                                <span class="material-symbols-outlined text-[20px]">download</span>
+                                Baixar Convite (PNG)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUNA DIREITA: PRÉVIA (16:9) -->
+                <div class="w-full lg:w-2/3">
+                    <div class="mb-4 flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Pré-visualização (16:9)</h3>
+                    </div>
+                   
+                    <!-- Wrapper Dinâmico -->
+                    <div id="preview-wrapper" class="shadow-2xl shadow-brand-blue/10">
+                        <!-- Canvas 1280x720 Fixo (Escalado via JS) -->
+                        <div id="capture-area" class="flex p-16 items-center">
+                           
+                            <!-- Conteúdo do Convite -->
+                            <div class="w-full h-full flex flex-row gap-10 items-center">
+                               
+                                <!-- Esquerda: Textos (60%) -->
+                                <div class="w-7/12 space-y-5">
+                                    <img id="logoXertica" src="https://i.imgur.com/jK3wKNi.png" alt="Xertica.ai" class="h-8 drop-shadow-md mb-1" crossorigin="anonymous">
+                                   
+                                    <div class="inline-block mb-2">
+                                        <span class="text-brand-blue text-xs font-bold uppercase tracking-widest">Convite Especial e Restrito</span>
+                                    </div>
+                                   
+                                    <div class="space-y-1">
+                                        <h2 class="text-5xl font-extrabold text-white leading-[1.1] drop-shadow-2xl font-display">
+                                            Almoço <span class="text-brand-blue">Exclusivo</span>
+                                        </h2>
+                                    </div>
+
+                                    <div class="py-4 border-l-4 border-brand-pink pl-5">
+                                        <h1 id="previewName" class="text-4xl font-bold text-brand-blue mb-3 font-display leading-tight">Olá, [Convidado]</h1>
+                                        <p class="text-lg text-slate-300 font-light leading-relaxed">
+                                            O Public Sector Summit está a chegar! E para tornar esta experiência ainda mais marcante, queremos celebrar as nossas conexões com um grupo seleto.<br><br>
+                                            Você é o nosso convidado especial para um almoço exclusivo pré-Public Sector Summit. Confira as informações ao lado e confirme a sua presença por aqui no WhatsApp.
+                                        </p>
+                                    </div>
+
+                                    <!-- Assinatura / Anfitrião -->
+                                    <div class="flex items-center gap-5 pt-1">
+                                        <div class="relative w-16 h-16 shrink-0 shadow-lg shadow-brand-pink/20 rounded-full">
+                                            <img src="https://i.imgur.com/G93U70K.jpeg" class="w-full h-full rounded-full object-cover border-2 border-brand-pink" alt="Gustavo de Paula" crossorigin="anonymous">
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-brand-pink uppercase font-bold tracking-widest mb-0.5">Seu Anfitrião</p>
+                                            <h4 class="text-white font-bold text-lg leading-tight">Gustavo de Paula</h4>
+                                            <p class="text-white text-sm">Country Manager Brazil</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Direita: Card de Informações (40%) -->
+                                <div class="w-5/12 h-full flex items-center">
+                                    <div class="invite-glass rounded-3xl p-8 w-full relative overflow-hidden">
+                                       
+                                        <!-- Foto do Restaurante -->
+                                        <div class="w-full h-64 rounded-2xl overflow-hidden mb-8 border border-white/10 relative bg-slate-800 flex items-center justify-center">
+                                            <img id="previewPhoto" src="https://i.imgur.com/lJZijEq.jpeg" class="w-full h-full object-cover" crossorigin="anonymous">
+                                        </div>
+
+                                        <!-- Informações Grid -->
+                                        <div class="space-y-6">
+                                            <!-- Data e Hora (Fixos conforme solicitado) -->
+                                            <div class="flex gap-4">
+                                                <div class="invite-date-badge rounded-xl p-4 text-center min-w-[100px] flex-1">
+                                                    <span class="block text-brand-blue font-bold text-3xl leading-none font-display">11/03</span>
+                                                    <span class="block text-slate-400 text-xs uppercase font-bold tracking-wider mt-2">Quarta</span>
+                                                </div>
+                                                <div class="invite-date-badge rounded-xl p-4 text-center min-w-[100px] flex-1">
+                                                    <span class="block text-white font-bold text-3xl leading-none font-display">12h00</span>
+                                                    <span class="block text-slate-400 text-xs uppercase font-bold tracking-wider mt-2">Horário</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Reserva -->
+                                            <div class="flex gap-5 items-center">
+                                                <div class="invite-icon-circle shrink-0">
+                                                    <span class="material-symbols-outlined text-brand-pink text-2xl">event_seat</span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-slate-400 text-xs uppercase tracking-widest font-bold mb-1">Nome da Reserva</p>
+                                                    <h4 id="previewReservation" class="text-white font-bold text-lg leading-snug font-display">Xertica / Public Sector Summit</h4>
+                                                </div>
+                                            </div>
+
+                                            <!-- Endereço -->
+                                            <div class="flex gap-5 items-start">
+                                                <div class="invite-icon-circle shrink-0 mt-1">
+                                                    <span class="material-symbols-outlined text-brand-green text-2xl">location_on</span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-slate-400 text-xs uppercase tracking-widest font-bold mb-1">Localização</p>
+                                                    <h4 id="previewAddress" class="text-white font-medium text-base leading-snug whitespace-pre-line"><span class="font-bold">NAU Brasília</span>
+Setor de Clubes Esportivos Sul,
+Asa Sul Trecho 2, Brasília - DF</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Lógica de Preenchimento Dinâmico
+        const inputs = {
+            name: document.getElementById('inputName')
+        };
+
+        const previews = {
+            name: document.getElementById('previewName')
+        };
+
+        // Textos Padrão
+        const defaults = {
+            name: 'Olá, [Convidado]'
+        };
+
+        // Atualizar textos
+        function updateText(inputElement, previewElement, defaultText, prefix = '') {
+            inputElement.addEventListener('input', (e) => {
+                const val = e.target.value.trim();
+                previewElement.textContent = val ? prefix + val : defaultText;
+            });
+        }
+
+        updateText(inputs.name, previews.name, defaults.name, 'Olá, ');
+
+        // Lógica de Escalonamento Responsivo do Canvas
+        function resizePreview() {
+            const wrapper = document.getElementById('preview-wrapper');
+            const captureArea = document.getElementById('capture-area');
+           
+            // O Canvas tem 1280px de largura fixos. Calculamos a proporção para caber na div pai.
+            const targetWidth = wrapper.clientWidth;
+            const scale = targetWidth / 1280;
+            
+            // Verifica se os elementos existem para evitar erros no iframe previewer
+            if(!wrapper || !captureArea) return;
+           
+            // Aplica o scale via CSS Transform e ajusta a altura do wrapper
+            captureArea.style.transform = `scale(${scale})`;
+            wrapper.style.height = `${720 * scale}px`;
+        }
+
+        // Executar redimensionamento ao carregar e alterar a tela
+        window.addEventListener('resize', resizePreview);
+        window.addEventListener('load', resizePreview);
+        // Timeout extra caso o layout não tenha renderizado a tempo no iframe
+        setTimeout(resizePreview, 100);
+
+        // Função de Download do Convite em PNG
+        async function downloadInvite() {
+            const captureArea = document.getElementById('capture-area');
+            const btn = document.querySelector('button');
+            const originalBtnText = btn.innerHTML;
+           
+            try {
+                // Estado de carregamento
+                btn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span> Gerando...';
+                btn.disabled = true;
+                btn.classList.add('opacity-70');
+
+                // Força o scroll para o topo para evitar bugs no html2canvas
+                window.scrollTo(0, 0);
+
+                // Reverter a escala temporariamente para 1 para capturar em resolução máxima
+                const currentTransform = captureArea.style.transform;
+                captureArea.style.transform = 'scale(1)';
+
+                const canvas = await html2canvas(captureArea, {
+                    scale: 2, // Retida 2x resolução (2560x1440) para altíssima qualidade
+                    useCORS: true,
+                    backgroundColor: '#050505',
+                    logging: false,
+                    width: 1280,
+                    height: 720
+                });
+
+                // Restaurar escala responsiva
+                captureArea.style.transform = currentTransform;
+
+                // Download
+                const link = document.createElement('a');
+               
+                // Nomear o arquivo com o nome da pessoa caso preenchido
+                let fileNameName = inputs.name.value.trim().replace(/\s+/g, '-').toLowerCase();
+                if(!fileNameName) fileNameName = "convidado";
+                link.download = `convite-xertica-${fileNameName}.png`;
+               
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+            } catch (error) {
+                console.error('Erro ao gerar a imagem:', error);
+                
+                // Alert personalizado pois alert padrão do browser as vezes é bloqueado no iframe
+                const errDiv = document.createElement('div');
+                errDiv.className = "fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50";
+                errDiv.innerText = "Ocorreu um erro ao gerar a imagem. Tente alterar a foto do restaurante.";
+                document.body.appendChild(errDiv);
+                setTimeout(() => errDiv.remove(), 4000);
+            } finally {
+                // Restaurar botão
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+                btn.classList.remove('opacity-70');
+            }
+        }
+    </script>
+</body>
+</html>
